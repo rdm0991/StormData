@@ -1,0 +1,63 @@
+---
+title: "Weather Effects on Population Health and Economic Consequences"
+output: 
+        html_document:
+        keep_md: true
+---
+Synopsis: Weather variation is a significant factor for many aspects of
+        any country's economic well being and it's citizen's population health 
+        and safety.        
+        ## Loading and preprocessing the data
+```{R echo=TRUE, cache=TRUE}
+library(ggplot2)
+library(sqldf)
+library(reshape2)
+
+setwd("C:\\Coursera\\StormData")
+s.Link <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2"
+download.file(s.Link, "StormData", mode="wb") 
+#stormData <- read.csv(file="repData_data_stormData.csv", header=TRUE,sep=",")
+stormData <- read.csv("StormData")
+```
+
+### Analysis of weather effects on population health
+The population health related parameters in dataset are injuries and fatalties 
+caused by the weather events.  These parameters along with event type is
+extracted by subsetting the dataset.  Further an aribitrary value for injuries 
+(injuries >500) and fatalities (fatalities >50) is chosen to present top events
+which has direct significant effect on population health.  
+
+
+```{R echo=TRUE, cache=TRUE}
+healthEff <- subset(stormData, INJURIES > 0 & FATALITIES > 0)
+aggHealthEff <- aggregate(cbind(INJURIES, FATALITIES) ~ EVTYPE, data=healthEff, FUN=sum)
+summary(aggHealthEff)
+
+aggHealthEffTop <- sqldf('Select EVTYPE, INJURIES, FATALITIES 
+                        from aggHealthEff 
+                        where INJURIES > 500 OR FATALITIES > 50
+                        order by INJURIES DESC, FATALITIES DESC')
+aggHealthEffTop
+aggHealthEffTop.m <- melt(aggHealthEffTop, id.vars="EVTYPE")
+p <- ggplot(aggHealthEffTop.m, aes(x=EVTYPE, y=value, fill=variable)) + geom_bar(stat='identity')
+p <- p + xlab("Weather Events") 
+p <- p + ylab("Number of Injuries/Fatalities") 
+p <- p + ggtitle("Injuries and Fatalities for top weather events")
+p <- p + theme(axis.text.x = element_text(angle=90, vjust=0.5, size=8))
+p
+```
+
+### Analysis of weather effects on economial consequences
+
+
+```{R echo=TRUE}
+
+```
+
+
+```{R echo=TRUE}
+
+
+```
+
+
